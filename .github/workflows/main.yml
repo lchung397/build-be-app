@@ -1,0 +1,65 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build NestJS app
+        run: npm run build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p dist-archive
+          cp -r dist node_modules package*.json .ebextensions/ dist-archive/ 2>/dev/null || true
+          cd dist-archive
+          zip -r ../build-be-app-${{ github.sha }}.zip .
+          cd ..
+
+      - name: Upload to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-2
+        run: |
+          aws s3 cp build-be-app-${{ github.sha }}.zip s3://build-be-app-deployments-2025/
+
+      - name: Create Elastic Beanstalk version
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-2
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name buildbeapp \
+            --version-label build-${{ github.sha }} \
+            --source-bundle S3Bucket=build-be-app-deployments-2025,S3Key=build-be-app-${{ github.sha }}.zip \
+            --region ap-southeast-2 || true
+
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ap-southeast-2
+        run: |
+          aws elasticbeanstalk update-environment \
+            --application-name buildbeapp \
+            --environment-name Buildbeapp-env \
+            --version-label build-${{ github.sha }} \
+            --region ap-southeast-2
