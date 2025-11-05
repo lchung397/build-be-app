@@ -1,11 +1,25 @@
+version: 0.2
+
 phases:
   install:
+    runtime-versions:
+      nodejs: 18
     commands:
+      - echo "Installing dependencies..."
       - npm install
   build:
     commands:
+      - echo "Building NestJS project..."
       - npm run build
+
 artifacts:
   files:
-    - '**/*'
-  base-directory: dist
+    - dist/**/*
+    - package.json
+    - package-lock.json
+    - Procfile
+    - nest-cli.json
+    - tsconfig*.json
+    - .npmrc
+    - .env
+  discard-paths: no
