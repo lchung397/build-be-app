@@ -60,6 +60,6 @@ jobs:
         run: |
           aws elasticbeanstalk update-environment \
             --application-name buildbeapp \
-            --environment-name Buildbeapp-env \
+            --environment-name BuildBeApp-env \
             --version-label build-${{ github.sha }} \
             --region ap-southeast-2
