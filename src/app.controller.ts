@@ -6,6 +6,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-    return 'hello ngọc mo đồ';
+    return 'hello world!!!!!';
   }
 }
