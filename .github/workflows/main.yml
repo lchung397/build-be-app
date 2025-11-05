@@ -36,7 +36,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-2
+          AWS_DEFAULT_REGION: ap-southeast-1
         run: |
           aws s3 cp build-be-app-${{ github.sha }}.zip s3://build-be-app-deployments-2025/
 
@@ -44,22 +44,22 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-2
+          AWS_DEFAULT_REGION: ap-southeast-1
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name buildbeapp \
+            --application-name buildBeApp \
             --version-label build-${{ github.sha }} \
             --source-bundle S3Bucket=build-be-app-deployments-2025,S3Key=build-be-app-${{ github.sha }}.zip \
-            --region ap-southeast-2 || true
+            --region ap-southeast-1 || true
 
       - name: Deploy to Elastic Beanstalk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ap-southeast-2
+          AWS_DEFAULT_REGION: ap-southeast-1
         run: |
           aws elasticbeanstalk update-environment \
-            --application-name buildbeapp \
+            --application-name buildBeApp \
             --environment-name BuildBeApp-env-1 \
             --version-label build-${{ github.sha }} \
-            --region ap-southeast-2
+            --region ap-southeast-1
